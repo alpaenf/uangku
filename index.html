@@ -92,16 +92,31 @@
       color: #ffffff !important;
     }
 
-    /* Filter styles */
-    .filter-container {
-      background-color: #f0f8ff;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
+    /* Filter dropdown styles */
+    .filter-dropdown {
+      position: relative;
+      display: inline-block;
     }
 
-    .dark-mode .filter-container {
+    .filter-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: #f9f9f9;
+      min-width: 300px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      padding: 15px;
+      z-index: 1;
+      border-radius: 8px;
+    }
+
+    .dark-mode .filter-content {
       background-color: #002b5c;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
+    }
+
+    .filter-dropdown.show .filter-content {
+      display: block;
     }
 
     /* Back to top button */
@@ -162,31 +177,32 @@
       <button id="toggleMode" class="btn btn-secondary"><i class="bi bi-moon-stars me-1"></i>Mode Gelap</button>
       <button id="exportCSV" class="btn btn-success"><i class="bi bi-download me-1"></i>Export CSV</button>
       <button id="resetData" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Reset</button>
-    </div>
-
-    <!-- Filter Section -->
-    <div class="filter-container mb-4">
-      <h5 class="mb-3">Filter Transaksi</h5>
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label for="startDate" class="form-label">Dari Tanggal</label>
-          <input type="date" class="form-control" id="startDate">
-        </div>
-        <div class="col-md-6">
-          <label for="endDate" class="form-label">Sampai Tanggal</label>
-          <input type="date" class="form-control" id="endDate">
-        </div>
-        <div class="col-md-6">
-          <label for="jenisTransaksi" class="form-label">Jenis Transaksi</label>
-          <select class="form-select" id="jenisTransaksi">
-            <option value="semua">Semua</option>
-            <option value="masuk">Pemasukan</option>
-            <option value="keluar">Pengeluaran</option>
-          </select>
-        </div>
-        <div class="col-md-6 d-flex align-items-end">
-          <button id="applyFilter" class="btn btn-primary me-2"><i class="bi bi-funnel me-1"></i>Terapkan</button>
-          <button id="resetFilter" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</button>
+      
+      <!-- Filter Button -->
+      <div class="filter-dropdown" id="filterDropdown">
+        <button class="btn btn-info" id="filterButton"><i class="bi bi-funnel me-1"></i>Filter</button>
+        <div class="filter-content">
+          <h5 class="mb-3">Filter Transaksi</h5>
+          <div class="mb-3">
+            <label for="startDate" class="form-label">Dari Tanggal</label>
+            <input type="date" class="form-control" id="startDate">
+          </div>
+          <div class="mb-3">
+            <label for="endDate" class="form-label">Sampai Tanggal</label>
+            <input type="date" class="form-control" id="endDate">
+          </div>
+          <div class="mb-3">
+            <label for="jenisTransaksi" class="form-label">Jenis Transaksi</label>
+            <select class="form-select" id="jenisTransaksi">
+              <option value="semua">Semua</option>
+              <option value="masuk">Pemasukan</option>
+              <option value="keluar">Pengeluaran</option>
+            </select>
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <button id="applyFilter" class="btn btn-primary btn-sm"><i class="bi bi-check-lg me-1"></i>Terapkan</button>
+            <button id="resetFilter" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</button>
+          </div>
         </div>
       </div>
     </div>
@@ -218,6 +234,8 @@
       const startDateInput = document.getElementById("startDate");
       const endDateInput = document.getElementById("endDate");
       const jenisTransaksiSelect = document.getElementById("jenisTransaksi");
+      const filterDropdown = document.getElementById("filterDropdown");
+      const filterButton = document.getElementById("filterButton");
 
       let data = JSON.parse(localStorage.getItem("uangku_data")) || [];
       let darkMode = localStorage.getItem("uangku_darkmode") === "true";
@@ -228,6 +246,22 @@
       const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       startDateInput.valueAsDate = firstDayOfMonth;
       endDateInput.valueAsDate = today;
+
+      // Toggle filter dropdown
+      filterButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        filterDropdown.classList.toggle('show');
+      });
+
+      // Close filter dropdown when clicking outside
+      document.addEventListener('click', function() {
+        filterDropdown.classList.remove('show');
+      });
+
+      // Prevent dropdown close when clicking inside
+      filterDropdown.querySelector('.filter-content').addEventListener('click', function(e) {
+        e.stopPropagation();
+      });
 
       function toggleMode() {
         darkMode = !darkMode;
@@ -269,6 +303,7 @@
         });
 
         render();
+        filterDropdown.classList.remove('show');
       }
 
       function resetFilters() {
@@ -277,6 +312,7 @@
         jenisTransaksiSelect.value = "semua";
         filteredData = [...data];
         render();
+        filterDropdown.classList.remove('show');
       }
 
       function render() {
