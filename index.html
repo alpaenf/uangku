@@ -119,37 +119,51 @@
       display: block;
     }
 
-    /* Back to top button */
-    .back-to-top {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background-color: #0d6efd;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-      z-index: 1000;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
+   /* BACK TO TOP BUTTON - VERSION MENCOLOK */
+  .back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FF6B6B, #FF8E8E); /* Warna gradien merah muda */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.3s ease;
+    border: none;
+    font-size: 1.5rem;
+  }
 
-    .dark-mode .back-to-top {
-      background-color: #0b5ed7;
-    }
+  .back-to-top.visible {
+    opacity: 1;
+  }
 
-    .back-to-top.visible {
-      opacity: 1;
-    }
+  .back-to-top:hover {
+    background: linear-gradient(135deg, #FF5252, #FF7676); /* Warna lebih gelap saat hover */
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(255, 82, 82, 0.6);
+  }
 
-    .back-to-top:hover {
-      background-color: #0b5ed7;
-    }
+  .back-to-top:active {
+    transform: scale(0.95);
+  }
+
+  /* Dark mode version */
+  .dark-mode .back-to-top {
+    background: linear-gradient(135deg, #4ECDC4, #66D9E8); /* Gradien biru muda */
+    box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+  }
+
+  .dark-mode .back-to-top:hover {
+    background: linear-gradient(135deg, #3DBDB4, #55C9D8);
+  }
 
     /* Footer styles */
     footer {
