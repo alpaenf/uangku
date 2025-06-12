@@ -84,12 +84,69 @@
     }
 
     .list-group-item-success {
-  color: #000000; /* Tambahkan ini untuk mode terang */
+      color: #000000;
     }
 
     .dark-mode .list-group-item-success {
-  background-color: #006d77 !important;
-  color: #ffffff !important; /* pastikan font putih di mode gelap */
+      background-color: #006d77 !important;
+      color: #ffffff !important;
+    }
+
+    /* Filter styles */
+    .filter-container {
+      background-color: #f0f8ff;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .dark-mode .filter-container {
+      background-color: #002b5c;
+    }
+
+    /* Back to top button */
+    .back-to-top {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background-color: #0d6efd;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .dark-mode .back-to-top {
+      background-color: #0b5ed7;
+    }
+
+    .back-to-top.visible {
+      opacity: 1;
+    }
+
+    .back-to-top:hover {
+      background-color: #0b5ed7;
+    }
+
+    /* Footer styles */
+    footer {
+      background-color: #f8f9fa;
+      padding: 20px 0;
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .dark-mode footer {
+      background-color: #002b5c;
+      color: white;
     }
   </style>
 </head>
@@ -107,7 +164,46 @@
       <button id="resetData" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Reset</button>
     </div>
 
+    <!-- Filter Section -->
+    <div class="filter-container mb-4">
+      <h5 class="mb-3">Filter Transaksi</h5>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="startDate" class="form-label">Dari Tanggal</label>
+          <input type="date" class="form-control" id="startDate">
+        </div>
+        <div class="col-md-6">
+          <label for="endDate" class="form-label">Sampai Tanggal</label>
+          <input type="date" class="form-control" id="endDate">
+        </div>
+        <div class="col-md-6">
+          <label for="jenisTransaksi" class="form-label">Jenis Transaksi</label>
+          <select class="form-select" id="jenisTransaksi">
+            <option value="semua">Semua</option>
+            <option value="masuk">Pemasukan</option>
+            <option value="keluar">Pengeluaran</option>
+          </select>
+        </div>
+        <div class="col-md-6 d-flex align-items-end">
+          <button id="applyFilter" class="btn btn-primary me-2"><i class="bi bi-funnel me-1"></i>Terapkan</button>
+          <button id="resetFilter" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</button>
+        </div>
+      </div>
+    </div>
+
     <div id="tanggalContainer"></div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p class="mb-0">© 2023 UangKu - Manajemen Keuangan</p>
+    </div>
+  </footer>
+
+  <!-- Back to top button -->
+  <div class="back-to-top" id="backToTop">
+    <i class="bi bi-arrow-up"></i>
   </div>
 
   <script>
@@ -116,9 +212,22 @@
       const tanggalContainer = document.getElementById("tanggalContainer");
       const totalBulananEl = document.getElementById("totalBulanan");
       const toggleModeBtn = document.getElementById("toggleMode");
+      const backToTopBtn = document.getElementById("backToTop");
+      const applyFilterBtn = document.getElementById("applyFilter");
+      const resetFilterBtn = document.getElementById("resetFilter");
+      const startDateInput = document.getElementById("startDate");
+      const endDateInput = document.getElementById("endDate");
+      const jenisTransaksiSelect = document.getElementById("jenisTransaksi");
 
       let data = JSON.parse(localStorage.getItem("uangku_data")) || [];
       let darkMode = localStorage.getItem("uangku_darkmode") === "true";
+      let filteredData = [...data];
+
+      // Set default date range to current month
+      const today = new Date();
+      const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      startDateInput.valueAsDate = firstDayOfMonth;
+      endDateInput.valueAsDate = today;
 
       function toggleMode() {
         darkMode = !darkMode;
@@ -145,12 +254,37 @@
         return tanggal.toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' });
       }
 
+      function applyFilters() {
+        const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
+        const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+        const jenisTransaksi = jenisTransaksiSelect.value;
+
+        filteredData = data.filter(item => {
+          const itemDate = new Date(item.tanggal);
+          const dateInRange = (!startDate || itemDate >= startDate) && 
+                            (!endDate || itemDate <= new Date(endDate.getTime() + 86400000)); // Add 1 day to include end date
+          const jenisMatch = jenisTransaksi === "semua" || item.jenis === jenisTransaksi;
+          
+          return dateInRange && jenisMatch;
+        });
+
+        render();
+      }
+
+      function resetFilters() {
+        startDateInput.valueAsDate = firstDayOfMonth;
+        endDateInput.valueAsDate = today;
+        jenisTransaksiSelect.value = "semua";
+        filteredData = [...data];
+        render();
+      }
+
       function render() {
         tanggalContainer.innerHTML = "";
         let saldo = 0;
         const perTanggal = {};
 
-        data.forEach(item => {
+        filteredData.forEach(item => {
           const tanggal = new Date(item.tanggal).toISOString().split("T")[0];
           if (!perTanggal[tanggal]) perTanggal[tanggal] = [];
           perTanggal[tanggal].push(item);
@@ -190,7 +324,6 @@
               </button>
             `;
 
-
             li.appendChild(info);
             li.appendChild(controls);
             listGroup.appendChild(li);
@@ -219,7 +352,28 @@
         totalBulananEl.textContent = `Total bulan ini: ${formatRupiah(totalBulanIni)}`;
       }
 
-      render();
+      // Back to top functionality
+      window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+          backToTopBtn.classList.add('visible');
+        } else {
+          backToTopBtn.classList.remove('visible');
+        }
+      });
+
+      backToTopBtn.addEventListener('click', function() {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      });
+
+      // Filter functionality
+      applyFilterBtn.addEventListener('click', applyFilters);
+      resetFilterBtn.addEventListener('click', resetFilters);
+
+      // Initial render with default filters
+      applyFilters();
 
       window.editItem = function (index) {
         const item = data[index];
@@ -229,14 +383,14 @@
         if (isNaN(nominal)) return alert("Nominal tidak valid.");
         data[index] = { ...item, keterangan, nominal };
         localStorage.setItem("uangku_data", JSON.stringify(data));
-        render();
+        applyFilters();
       }
 
       window.hapusItem = function (index) {
         if (confirm("Yakin ingin menghapus transaksi ini?")) {
           data.splice(index, 1);
           localStorage.setItem("uangku_data", JSON.stringify(data));
-          render();
+          applyFilters();
         }
       }
 
