@@ -76,6 +76,13 @@
     .btn-delete:hover {
       background-color: #bb2d3b;
     }
+
+    @media (max-width: 576px) {
+      .btn-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+      }
+    }
   </style>
 </head>
 
@@ -105,13 +112,12 @@
       let data = JSON.parse(localStorage.getItem("uangku_data")) || [];
       let darkMode = localStorage.getItem("uangku_darkmode") === "true";
 
-      function toggleMode() {
+      toggleModeBtn.addEventListener("click", function () {
         darkMode = !darkMode;
         localStorage.setItem("uangku_darkmode", darkMode);
         document.body.classList.toggle("dark-mode", darkMode);
-      }
+      });
 
-      toggleModeBtn.addEventListener("click", toggleMode);
       document.body.classList.toggle("dark-mode", darkMode);
 
       function formatRupiah(angka) {
@@ -156,16 +162,23 @@
 
           group.forEach(item => {
             const li = document.createElement("li");
-            li.className = "list-group-item d-flex justify-content-between align-items-center " +
-              (item.jenis === "masuk" ? "list-group-item-success" : "list-group-item-danger");
+            li.className = "list-group-item";
+
+            if (item.jenis === "masuk") li.classList.add("list-group-item-success");
+            else li.classList.add("list-group-item-danger");
+
+            const row = document.createElement("div");
+            row.className = "d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center";
 
             const info = document.createElement("div");
+            info.className = "mb-2 mb-md-0";
             info.innerHTML = `<div class="fw-semibold">${item.keterangan}</div><small>${formatTanggal(item.tanggal)} - ${formatWaktu(item.tanggal)}</small>`;
 
             const controls = document.createElement("div");
+            controls.className = "d-flex flex-wrap align-items-center justify-content-end gap-2 text-end";
             controls.innerHTML = `
-              <span class="fw-bold me-2 d-inline-block">${formatRupiah(item.nominal)}</span>
-              <button class="btn btn-edit btn-icon me-1" onclick="editItem(${data.indexOf(item)})" title="Edit">
+              <span class="fw-bold me-md-2 d-block w-100 w-md-auto">${formatRupiah(item.nominal)}</span>
+              <button class="btn btn-edit btn-icon" onclick="editItem(${data.indexOf(item)})" title="Edit">
                 <i class="bi bi-pencil-fill"></i>
               </button>
               <button class="btn btn-delete btn-icon" onclick="hapusItem(${data.indexOf(item)})" title="Hapus">
@@ -173,8 +186,9 @@
               </button>
             `;
 
-            li.appendChild(info);
-            li.appendChild(controls);
+            row.appendChild(info);
+            row.appendChild(controls);
+            li.appendChild(row);
             listGroup.appendChild(li);
 
             saldo += item.jenis === "masuk" ? item.nominal : -item.nominal;
