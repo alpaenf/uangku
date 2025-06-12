@@ -82,6 +82,15 @@
     .btn-delete:hover {
       background-color: #bb2d3b;
     }
+
+    .list-group-item-success {
+  color: #000000; /* Tambahkan ini untuk mode terang */
+    }
+
+    .dark-mode .list-group-item-success {
+  background-color: #006d77 !important;
+  color: #ffffff !important; /* pastikan font putih di mode gelap */
+    }
   </style>
 </head>
 
@@ -172,7 +181,7 @@
             const controls = document.createElement("div");
             controls.className = "d-flex align-items-center gap-2";
             controls.innerHTML = `
-              <span class="fw-bold text-white me-2">${formatRupiah(item.nominal)}</span>
+              <span class="fw-bold me-2">${formatRupiah(item.nominal)}</span>
               <button class="btn btn-edit btn-icon" onclick="editItem(${data.indexOf(item)})" title="Edit">
                 <i class="bi bi-pencil-fill"></i>
               </button>
@@ -180,6 +189,7 @@
                 <i class="bi bi-trash-fill"></i>
               </button>
             `;
+
 
             li.appendChild(info);
             li.appendChild(controls);
